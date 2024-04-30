@@ -1,4 +1,5 @@
 main.*
 !main.tex
+!main.pdf
 
 img/*.xbb
