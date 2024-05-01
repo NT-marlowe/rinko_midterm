@@ -1,0 +1,43 @@
+\section{Introduction}
+In the contemporary digital landscape, the sophistication of malware,
+particularly in its ability to evade detection and analysis,
+poses a significant challenge to cybersecurity efforts.
+Among these evasive tactics, shadow attacks~\cite{Weiqin:ShadowAttack},
+which cleverly distribute malicious activities across multiple processes,
+stand out as particularly insidious.
+These attacks exploit the inherent complexity of operating systems,
+mimicking benign multi-process behavior to obfuscate their malicious intent.
+Traditional detection mechanisms, reliant on static and dynamic analysis techniques,
+often fall short in identifying these distributed threats,
+necessitating the exploration of more advanced methodologies.
+
+This paper introduces an innovative approach to tackling the
+challenge posed by shadow attacks through the use of Extended Berkeley Packet Filter (eBPF).
+eBPF, a technology that allows for the safe execution of custom code within the
+Linux kernel without changing kernel source code or loading kernel modules,
+offers a powerful mechanism for monitoring and tracing system-level operations.
+Our research leverages eBPF to analyze the interconnections between function calls,
+thereby revealing the execution patterns of processes involved in shadow attacks.
+By mapping these patterns, we aim to uncover the stealthy operations of evasive malware,
+providing insights that could lead to more effective detection and mitigation strategies.
+
+We focus on the potential of eBPF to provide granular visibility into the behavior
+of systems at runtime, enabling the identification of the complex orchestration of
+processes characteristic of shadow attacks. Through the detailed analysis of function
+call chains, we can trace the flow of execution within malicious processes,
+identifying their strategies and mechanisms. This approach not only enhances
+our understanding of how such attacks are constructed and executed but also opens
+new avenues for developing countermeasures that can detect and neutralize these threats more efficiently.
+
+By employing eBPF to dissect the intricacies of process execution and interaction in the
+context of shadow attacks, our research contributes a novel perspective to the field of
+cybersecurity. We demonstrate how eBPF's capabilities can be harnessed to advance our
+understanding of malicious process execution, offering a promising methodology for combatting
+evasive malware. Through this work, we aim to bolster the cybersecurity community's arsenal against
+the ever-evolving landscape of malware threats, ensuring a more secure digital environment for all users.
+
+Our exploration into the use of eBPF against shadow attacks not only highlights the adaptability and
+complexity of modern malware but also underscores the necessity for innovative detection and analysis
+techniques. As we delve into the capabilities and applications of eBPF, we pave the way for future
+research and development in the domain of cybersecurity, seeking to establish more sophisticated defenses
+against the cunning and elusive nature of malware attacks.
