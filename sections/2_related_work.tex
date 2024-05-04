@@ -75,29 +75,31 @@ One countermeasure is extracting correlation between processes and reconstructin
 the original system call graph, but the authors conducted an evaluation experiment following this approach,
 whose result suggested that solution would encounter challenges of high overhead.
 
+\subsection{eBPF}
+\subsubsection{Berkeley Packet Filter}
+Steven and Van \cite{mccanne1993bsd} proposed the BSD Packet Filter architecture in 1993 for efficient packet capture on
+Unix-based operating systems. In the following, we refer to Berkeley Packet Filter as "BPF."
+At the time of paper publication, packet capture involved copying all packets acquired in the kernel
+space to the user space before filtering.
+This process resulted in unnecessary overhead. \cite{mccanne1993bsd} devised a pseudo-machine (BPF pseudo-machine)
+that interprets programs written in special 32-bit instructions to perform filtering.
+By running this pseudo-machine in the kernel space, they addressed the issue. Compared to existing systems,
+BPF operated up to 20 times faster.
+The overview of BPF architecture is shown in Figure \ref{img:bpf_old}.
 
+BPF was introduced in the Linux kernel as "Linux Socket Filter" in version 2.1.75 and
+was used to accelerate the \texttt{tcpdump} command.
 
-
-\subsection{Berkeley Packet Filter}
-StevenとVan \cite{mccanne1993bsd}は1993年に，Unix系のOS上でパケットキャプチャを効率的に行うためのアーキテクチャである
-BSD Packet Filterを提案した．以下，Berkeley Packet Filterを「BPF」と表記する． \\
-論文発表当時のパケットキャプチャでは，カーネル空間で取得したパケットをすべてユーザー空間にコピーしてからフィルタリングしていて，
-これが無駄なオーバーヘッドの原因となっていた．
-\cite{mccanne1993bsd}は特殊な32ビット命令で記述されたプログラムを解釈して
-フィルタリングを行う疑似マシン (BPF pseudo-machine) を考案し，それをカーネル空間で動作させることでこの問題に対処した．
-既存のシステムとの比較では，BPFは最大で20倍程度高速に動作した．
-BPFのアーキテクチャの概要を\Fref{img:bpf_old}に示す．
-
-BPFはLinuxカーネルのv2.1.75にてLinux Socket Filterという名前で導入され，\texttt{tcpdump}コマンドの高速化のために使われた．
-
-\subsection{BPFの拡張}
-BPFはLinuxカーネルのv3.18にて大幅に改修，拡張が行われ，extended BPFすなわちeBPFと呼ばれるようになった \cite{Linux31836:online}．
-拡張された部分は多岐にわたるが，代表的なものを以下に列挙する \cite{learning-ebpf}．
+\subsubsection{Extended Berkeley Packet Filter}
+BPF underwent significant improvements and extensions in the Linux kernel version 3.18,
+leading to the emergence of extended BPF, commonly referred to as eBPF \cite{Linux31836:online}.
+The enhancements cover various aspects, with notable additions summarized below \cite{learning-ebpf}:
 \begin{itemize}
-  \item BPF命令セットが32ビットから64ビットに書き直され，実行効率が向上した．
-  \item eBPF mapが導入され，ユーザー空間とカーネル空間の間でデータを共有する手段が追加された．
-  \item eBPFプログラムが安全に実行できることを検証するeBPF verifierが追加された．
+  \item 64-Bit BPF Instruction Set: The BPF instruction set was reworked from 32-bit to 64-bit, resulting in improved execution efficiency.
+  \item eBPF Maps: The introduction of eBPF maps allowed data sharing between user space and kernel space. These maps serve as a mechanism for efficient communication.
+  \item eBPF Verifier: To ensure safe execution of eBPF programs, an eBPF verifier was added. It validates the correctness and security of eBPF code.
 \end{itemize}
+
 \begin{figure}[tp]
   \begin{center}
     \includegraphics[width=\columnwidth]{./img/bpf_overview.png}
@@ -107,15 +109,17 @@ BPFはLinuxカーネルのv3.18にて大幅に改修，拡張が行われ，exte
   \label{img:bpf_old}
 \end{figure}
 
-また，eBPFがカバーする領域も拡大していった．ネットワークの文脈では，Linuxのネットワークスタックの様々なレイヤー，例えばUnix socket
-やネットワークデバイスなどを扱えるようになった．加えてeBPFプログラムはLinuxシステムのパフォーマンストレーシングやセキュリティ向上にも
-利用できるようになり，"BPF"という単語は本来の意味である"Berkeley Packet Filter"を失い独立した単語として使われるようになっていった．
+The area covered by eBPF has also expanded.
+In the context of networking, it has become able to handle various layers of the Linux network stack,
+such as unix domain sockets and network devices.
+Additionally, eBPF programs can now be used for performance tracing and enhancing the security of Linux systems,
+leading to the term "BPF" losing its original meaning of "Berkeley Packet Filter" and being used as an independent term.
 
-便宜上，v3.18における拡張以前のBPFをclassical BPF，あるいはcBPFと呼ぶことがある．
+For convenience, BPF before the extension in v3.18 is sometimes referred to as classical BPF or cBPF.
 
-\subsection{eBPFのアーキテクチャ}
-eBPFのアーキテクチャの概要を\Fref{img:ebpf-system}に示す．以下，\Fref{img:ebpf-system}を参照しながら重要な
-処理フローについて説明する．
+\subsection{Overview of eBPF Architecture}
+An overview of the eBPF architecture is shown in \Fref{img:ebpf-system}．
+Hereafter, we describe the important processing flows with reference to \Fref{img:ebpf-system}.
 \begin{figure}[tp]
   \begin{center}
     \includegraphics[width=\columnwidth]{./img/ebpf_system.png}
@@ -126,35 +130,35 @@ eBPFのアーキテクチャの概要を\Fref{img:ebpf-system}に示す．以下
 \end{figure}
 
 \subsubsection{Event-Driven Architecture}
-eBPFはevent-drivenである．カーネル内でのイベントにeBPFプログラムをフックし，
-イベントが発生したら所定の処理を行う，という仕組みである．
-eBPFプログラムは動的にロードまたは削除することが可能である．
 
-eBPFがフックできるイベントはカーネルのソースコード \footnote{\texttt{include/uapi/linux/bpf.h}} においてProgram Typeとして定義されている．
-Program Typeをイベントの種別ごとに分類すると，以下のようなものが挙げられる．
+eBPF has an event-driven architecture.
+The mechanism involves hooking an eBPF program to an event in the kernel, and then
+performing the specified processing when the event occurs. eBPF programs can be dynamically loaded or removed.
+
+The events that eBPF can hook into are defined as Program Types in the kernel's source code \footnote{\texttt{include/uapi/linux/bpf.h}}.
+A few examples of Program Types are as follows:
 \begin{itemize}
-  \item XDP: ネットワークデバイスにパケットが到着したとき，カーネル空間にデータがコピーされる前にパケットを操作するためのイベント．
-  \item tracing: カーネル関数の呼び出しやトレースポイントの通過を検知するためのイベント．
-  \item LSM: Linux Security Moduleを利用してセキュリティポリシーを適用するためのイベント．
+  \item XDP: An event for manipulating packets before data is copied to the kernel space when a packet arrives at a network device.
+  \item Tracing: An event for detecting kernel function calls and passing tracepoints.
+  \item LSM: An event for applying security policies using the Linux Security Module.
 \end{itemize}
-
-このようなイベントが発生したとき，eBPFプログラムはProgram Typeに応じた処理を実行する．
-例えばXDPのイベントにフックされているプログラムがパケットをacceptするかdropするかを判断する，といった
-処理が可能である．
+When such events occur, the eBPF program executes the processing corresponding to the Program Type.
+For example, a program hooked to an XDP event can decide whether to accept or drop a packet.
 
 \subsubsection{eBPF Verifier}
-eBPF verifierはバイトコードに変換されたeBPFプログラムを入力とし，そのプログラムがカーネル上で安全に
-実行できることを検証するプログラムである．バイトコードは\texttt{bpf()}システムコールで
-カーネル上にロードされる (\Fref{img:ebpf-system}の"Syscall") が，verifierによる検証を
-通過しない限りプログラムは実行されない．
-具体的には，メモリアクセス違反を起こさないことやプログラムが正常に終了すること，
-不必要なprivilegeがプログラムに与えられていないことなどが確認されている．
+The eBPF verifier is a program that takes eBPF programs converted to bytecode as input and
+verifies that they can be executed safely on the kernel.
+The bytecode is loaded into the kernel via the \texttt{bpf()} system call
+(shown as "Syscall" in \Fref{img:ebpf-system}), but the program will not run unless it passes verification by the verifier.
+Specifically, it checks for things like avoiding memory access violations, ensuring the program exits normally,
+and that the program is not granted unnecessary privileges.
 
-このように，eBPF verifierはeBPFプログラムに制約を課すことで安全性を高めている．
-verifierがeBPFにおいて重要な意味を持つことから，verifierのロジックを数学的に検証する
-研究 \cite{vishwanathan2023verifying}も行われている．
+In this way, the eBPF verifier enhances security by imposing restrictions on eBPF programs.
+Since the verifier plays a crucial role in eBPF,
+research has been conducted to mathematically verify the logic of the verifier \cite{vishwanathan2023verifying}.
 
-\subsubsection{JITコンパイル}
-verifierを通過したeBPFバイトコードはJITコンパイラによってターゲットのCPU上で直接動作する機械語に変換される．
-これにより実行速度が最適化され，ソースコードから直接コンパイルされたカーネルおよびカーネルモジュールと同程度効率的に
-動作する．
+\subsubsection{JIT Compilation}
+The eBPF bytecode that passes the verifier is converted by a JIT compiler into machine code
+that directly runs on the target CPU. This optimizes the execution speed, allowing it
+to operate as efficiently as the kernel and kernel modules directly compiled from source code
+\cite{WhatiseB29:online}.
