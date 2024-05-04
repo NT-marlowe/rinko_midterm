@@ -39,6 +39,42 @@ rewriting to selectively instrument only instructions related to taint analysis.
 
 
 \subsection{Shadow Attack \cite{Weiqin:ShadowAttack}}
+Shadow Attack is one of the techniques used by malware writers to evade behavior-based detection systems,
+orchestrating multiple processes to stealthily carry out malicious activities.
+
+Such detectors typically rely on comparing system call graph within a process under scrutiny with predefined
+malware specifications established on specific sequences or graphs of system calls\cite{inproceedings}.
+For example, the malware specification of download-and-execute is expressed as follows \cite{Weiqin:ShadowAttack}:
+\begin{equation}
+  \texttt{recv} \land \texttt{open} \rightarrow \texttt{write} \rightarrow \texttt{exec}
+\end{equation}
+, where $s_1 \land s_2$ denotes both of two system calls $s_1, s_2$ are executed and $s_1 \rightarrow s_2$
+denotes $s_1$ is followed by $s_2$.
+
+So more specifically, the goal of Shadow Attack is to bypass dynamic malware detection based on
+the analysis of system call graphs by exporting any critical system call included in malware specifications to
+other collaborating processes, which is called shadow processes.
+We call the Communication shadow processes do with each other as Shadow Process Communication (SPC).
+The concept of Shadow Attack is illustrated in \Fref{img:shadow-attack}.
+\begin{figure}[tp]
+  \begin{center}
+    \includegraphics[width=\columnwidth]{./img/archi_SA.png}
+  \end{center}
+  \caption{Illustration of Shadow Attacks
+    \cite{Weiqin:ShadowAttack}}
+  \label{img:shadow-attack}
+\end{figure}
+
+Shadow attacks can be categorized into in-host, remote-network-coordinated, and hybrid.
+In in-host shadow attacks, all shadow processes are executed on the same host and SPCs are conducted through
+unix domain socket or stream pipe, while remote-network-coordinated shadow attacks involve multiple remote hosts
+that are connected through network sockets.
+Prototype implementation is made by the authors only for in-host shadow attacks.
+
+One countermeasure is extracting correlation between processes and reconstructing
+the original system call graph, but the authors conducted an evaluation experiment following this approach,
+whose result suggested that solution would encounter challenges of high overhead.
+
 
 
 
