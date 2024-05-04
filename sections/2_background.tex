@@ -1,43 +1,4 @@
-\section{Related Work}
-\subsection{Malware Analysis}
-Malware analysis is a critical aspect of cybersecurity, enabling the identification
-and mitigation of malicious software threats.
-Analysis techniques can be roughly categorized into two classes: static and dynamic.
-
-\subsubsection{Static Analysis}
-Static analysis involves examining the structure and content of a suspected malicious file without executing it.
-Static analysis are often conducted as a preliminary step to grasp the general characteristics of the malware
-before more sophisticated analysis techniques are applied \cite{chakkaravarthy2019survey}.
-
-\textbf{Signature matching} is a common technique that compares the "signature", characteristics of a file
-against a database of malware such as VirusTotal \cite{VirusTot28:online}. The characteristics include file size, hash values, and byte sequences.
-Although this method has been a staple in malware detection, it is limited by its inability to detect only known malware.
-
-\textbf{Disassemble and decompile} is another static analysis technique
-that involves converting the binary code of a malware into a human-readable format.
-From the decompiled code, analysts might be able to identify the malware's functionality and behavior as well as finding
-interesting strings like URLs, IP addresses, and encryption keys.
-
-\subsection{Dynamic Analysis \cite{10.1145/3329786}}
-Dynamic analysis entails examining the behavior of malware by executing it in a controlled environment.
-This approach enables analysts to witness the interactions between the malware and the system,
-providing insights into its true intentions and capabilities.
-
-\textbf{Function call analysis} is a method that focuses on tracking functions issued by the malware and the parameters
-passed to them. One way to archive this is by code injection, in which analyzing code is hooked into
-a specific function call and various information is collected and notified when the function is called.
-Carsten et al. \cite{willems2007toward} created an automated malware analysis system that injects DLLs within CWSandbox,
-letting analysts monitor system calls.
-
-\textbf{Data flow tracking} is another approach that tracks the flow of data through the malware, and data tainting is an established
-technique in this area. It involves marking (or "tainting") specific data components and then monitoring
-how this tainted data propagates through the system.
-Data tainting could be utilized in static analysis, but due to some evasion strategies like encryption and obfuscation
-it has endured challenges in practice \cite{alashjee2019dynamic}.
-SELECTIVETAINT \cite{chen2021selectivetaint} was invented to address performance overhead issue by employing static binary
-rewriting to selectively instrument only instructions related to taint analysis.
-
-
+\section{Background}
 \subsection{Shadow Attack \cite{Weiqin:ShadowAttack}}
 Shadow Attack is one of the techniques used by malware writers to evade behavior-based detection systems,
 orchestrating multiple processes to stealthily carry out malicious activities.
@@ -117,7 +78,7 @@ leading to the term "BPF" losing its original meaning of "Berkeley Packet Filter
 
 For convenience, BPF before the extension in v3.18 is sometimes referred to as classical BPF or cBPF.
 
-\subsection{Overview of eBPF Architecture}
+\subsubsection{Overview of eBPF Architecture}
 An overview of the eBPF architecture is shown in \Fref{img:ebpf-system}．
 Hereafter, we describe the important processing flows with reference to \Fref{img:ebpf-system}.
 \begin{figure}[tp]
@@ -162,13 +123,3 @@ The eBPF bytecode that passes the verifier is converted by a JIT compiler into m
 that directly runs on the target CPU. This optimizes the execution speed, allowing it
 to operate as efficiently as the kernel and kernel modules directly compiled from source code
 \cite{WhatiseB29:online}.
-
-\subsubsection{Kernel Modules}
-Kernel modules are a mechanism that allows for the extension of kernel functions without modifying the kernel's
-source code by loading object files during the execution of the Linux kernel.
-Kernel modules are not subject to constraints like the eBPF verifier, thus offering a high degree of program freedom.
-However, since kernel modules are executed with the same privileges as the kernel,
-it is necessary to develop carefully to avoid embedding vulnerabilities \cite{chen2011linux}.
-
-As Mayer et al. \cite{mayer2021performance} point out, avoiding the creation of kernel modules can be
-considered an advantage of eBPF.
