@@ -70,58 +70,6 @@
 
 \input{sections/2_related_work.tex}
 
-\section{関連分野}
-\subsection{カーネルモジュール}
-カーネルモジュールはLinuxカーネル実行時にオブジェクトファイルをロードすることで，
-カーネルのソースコードを変更せずにカーネルの機能を拡張する仕組みの1つである．
-カーネルモジュールには eBPF verifierのような制約がないため，プログラムの自由度は高い．
-しかしカーネルモジュールはカーネルと同じprivilegeで実行されるので，
-脆弱性を埋め込まないように注意して開発を行う必要がある \cite{chen2011linux}．
-
-Mayerら \cite{mayer2021performance}が指摘するように，カーネルモジュールの作成を避けることができるのはeBPFの長所であると言える．
-
-\subsection{Linux Security Modules}
-LSM (Linux Security Modules) はLinuxカーネルのセキュリティポリシーを実装するためのフレームワークである．
-LSMはアクセス制御に関するカーネル内の処理にフックポイントを提供し，そのポイントにセキュリティポリシーの
-具体的な実装であるセキュリティモジュールを組み込むことができる
-\footnote{セキュリティモジュールはカーネルモジュールのように動的にロードまたはアンロードすることができず，カーネルのビルド時に静的にリンクする必要がある．}．
-カーネルがフックポイントを通過すると，セキュリティモジュールへのコールバックが発行されて強制的にアクセス制御が行われる．
-LSMの処理フローの概要を\Fref{img:lsm-process}に示す．
-\begin{figure}[tp]
-  \begin{center}
-    \includegraphics[width=\columnwidth]{./img/lsm-stack-hooks.png}
-  \end{center}
-  \caption{The process flow of LSM when \texttt{open()} system call is issued. \cite{LinuxSec12:online}}
-  \label{img:lsm-process}
-\end{figure}
-LSMはLinuxのcapabilityやSELinuxで利用されている \cite{LinuxSec95:online}．
-
-カーネルv5.17からLSM BPFという機能が追加され，eBPFプログラムをLSMが提供するAPIにフックすることができるようになった．
-
-\subsection{Seccomp}
-SeccompはLinuxで採用されているセキュリティシステムの1つで，あるプロセスが発行することができる
-システムコールを制限する．
-v6.6時点でSeccompの実装はcBPF (eBPFではない) に依存しており，cBPFを用いて
-システムコールのフィルターをプロセスごとに変更することができる．
-この機能をseccomp-bpfと呼ぶ．
-
-SeccompはDocker \cite{Seccomps57:online} やKubernetes\cite{Configur55:online} などの仮想化技術で広く用いられている．
-
-\subsection{クラウドネイティブ}
-クラウドネイティブとは，クラウド基盤を前提としてアプリケーションやシステムを構築および管理するアプローチのことである．
-物理インフラの調達とメンテナンスのコストが不要になるほか，アプリケーションの開発やデプロイが効率的になる点，
-高い可用性が確保できる点がメリットとして挙げられる．
-
-eBPFはクラウドネイティブ環境で幅広く使われている技術で，代表的なプロダクトとしてCilium \cite{CiliumCl38:online}がある．
-Ciliumによってコンテナ間のL3通信を制御したり，セキュリティ機能や可観測性をコンテナ間パケットに付与したりすることができる．
-
-eBPFは以下のような理由でクラウドネイティブ技術とよく適合する．
-\begin{itemize}
-  \item ネットワークやシステムコール，アプリケーションのイベントをリアルタイムで監視することができる．
-  \item カーネル空間で実行されるためオーバーヘッドが小さく，スケーラビリティを損ねない．
-  \item 動的なロードまたはアンロードが可能で，システムの継続的インテグレーション/デリバリーを容易にする．
-\end{itemize}
-
 \section{既存研究の取り組み}
 これまでに述べたように，eBPFの応用範囲はパケットキャプチャにとどまらず
 ネットワークスタック全般やシステムの監視にまで広がっている．

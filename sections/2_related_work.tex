@@ -162,3 +162,13 @@ The eBPF bytecode that passes the verifier is converted by a JIT compiler into m
 that directly runs on the target CPU. This optimizes the execution speed, allowing it
 to operate as efficiently as the kernel and kernel modules directly compiled from source code
 \cite{WhatiseB29:online}.
+
+\subsubsection{Kernel Modules}
+Kernel modules are a mechanism that allows for the extension of kernel functions without modifying the kernel's
+source code by loading object files during the execution of the Linux kernel.
+Kernel modules are not subject to constraints like the eBPF verifier, thus offering a high degree of program freedom.
+However, since kernel modules are executed with the same privileges as the kernel,
+it is necessary to develop carefully to avoid embedding vulnerabilities \cite{chen2011linux}.
+
+As Mayer et al. \cite{mayer2021performance} point out, avoiding the creation of kernel modules can be
+considered an advantage of eBPF.
