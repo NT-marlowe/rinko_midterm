@@ -18,12 +18,6 @@ to shadow processes and hyde its malicious behavior.
 \cite{Weiqin:ShadowAttack} listed examples of system calls that are critical for malware's intent,
 shown in \Tref{tab:critical-system-calls}.
 
-Among these system calls, file-related and network-related system calls handle file descriptors:
-\texttt{open} and \texttt{socket} create a new file descriptor,
-while others access the file tied to the file descriptor or perform network communication.
-So shadow processes need to transfer file descriptors to each other to perform the file-related and
-network-related system calls. This concept is shown in \Fref{img:fd-transfer}.
-
 \begin{table*}[t]
   \caption{Examples of critical system calls. This table is reconstructed by the author from \cite{Weiqin:ShadowAttack}.}
   \centering
@@ -41,11 +35,25 @@ network-related system calls. This concept is shown in \Fref{img:fd-transfer}.
   \label{tab:critical-system-calls}
 \end{table*}
 
+Among these system calls, file-related and network-related system calls handle file descriptors:
+\texttt{open} and \texttt{socket} create a new file descriptor,
+while others access the file tied to the file descriptor or perform network communication.
+So shadow processes need to transfer file descriptors to each other to perform the file-related and
+network-related system calls. This concept is shown in \Fref{img:fd-transfer}.
+To our best knowledge, file descriptor transfer through unix domain socket is a technology that, although not uncommon
+in cloud-native environments \cite{Envoypro3:online,HAProxyT74:online},
+is relatively rare in traditional Linux server environments
+(that would be because the technology introduces unnecessary complexity and overhead in the system).
+This situation makes the file descriptor transfer a unique characteristic of shadow attacks.
+
 \begin{figure*}[t]
   \begin{center}
     \includegraphics[width=1.8\columnwidth]{./img/fd_transfer.png}
   \end{center}
-  \caption{fff}
+  \caption{Illustration of the concept of file descriptor transfer between shadow processes.
+    The main process requests the shadow process to execute system calls, along with the required arguments.
+    The thick arrows indicate the transfer of file descriptors over the control messages exchanged through IPC.}
   \label{img:fd-transfer}
 \end{figure*}
-"But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursue pleasure rationally encounter consequences that are extremely painful. Nor again is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain, but because occasionally circumstances occur in which toil and pain can procure him some great pleasure. To take a trivial example, which of us ever undertakes laborious physical exercise, except to obtain some advantage from it? But who has any right to find fault with a man who chooses to enjoy a pleasure that has no annoying consequences, or one who avoids a pain that produces no resultant pleasure?"
+
+\subsection{Design Overview}
