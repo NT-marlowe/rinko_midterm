@@ -58,13 +58,40 @@ This situation makes the file descriptor transfer a unique characteristic of sha
 
 \subsection{Design Overview}
 The overview of proposed method is shown in \Fref{img:proposal-overview}.
-\begin{figure}[t]
-  \begin{center}
-    \includegraphics[width=\columnwidth]{./img/proposal_overview.png}
-  \end{center}
-  \caption{Illustration of the concept of file descriptor transfer between shadow processes.
-    The main process requests the shadow process to execute system calls, along with the required arguments.
-    The thick arrows indicate the transfer of file descriptors over the control messages exchanged through IPC.}
+Our system consists of the three components: the eBPF program, the eBPF map, and the user space program.
+Each of them are described in detail in the following subsections.
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=1.8\columnwidth]{./img/proposal_overview.png}
+  \caption{Overview of the proposed method. Our research is not
+    affiliated with or otherwise sponsored by eBPF Foundation\cite{BrandGui21:online}.}
   \label{img:proposal-overview}
-\end{figure}
+\end{figure*}
+
+\subsubsection{Details of eBPF Program}
+We use fentry/fexit \cite{learning-ebpf}, eBPF features that were introduced in kernel version 5.5,
+to efficiently attach the eBPF program to the entry of exit point of specific system calls.
+
+In this system the eBPF program is attached to the file-related system calls such as \texttt{open} or \texttt{read},
+and gets the value of file descriptor passed to the system call as an argument.
+It retrieves the pointer of \texttt{task\_struct} \cite{schedhin43:online} of the process that issued the system call,
+and dereferences it to read the file descriptor array in a way that meets the demand of eBPF verifier.
+Using this array,
+it reads the pointer to the file structure (\texttt{struct file} \cite{fshinclu57:online})
+corresponding to the specified file descriptor.
+
+Then the program populates the eBPF map with the entry of data structure that
+contains process id, an integer that indicates which system call was issued,
+and the pointer value to the file structure.
+
+\subsubsection{Details of eBPF Map: Ring Buffer}
+eBPF map is a data structure that allows data sharing between user space and kernel space, and
+we select ring buffer as the type of eBPF map for this system because read from user space
+and write from kernel space happen at the same rate.
+
+As described in the previous subsection, the eBPF program populates the ring buffer
+every time the file-related system call is issued.
+
+
+
 
