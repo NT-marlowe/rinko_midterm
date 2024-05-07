@@ -62,7 +62,7 @@ Our system consists of the three components: the eBPF program, the eBPF map, and
 Each of them are described in detail in the following subsections.
 \begin{figure*}[t]
   \centering
-  \includegraphics[width=1.8\columnwidth]{./img/proposal_overview.png}
+  \includegraphics[width=1.5\columnwidth]{./img/proposal_overview.png}
   \caption{Overview of the proposed method. Our research is not
     affiliated with or otherwise sponsored by eBPF Foundation\cite{BrandGui21:online}.}
   \label{img:proposal-overview}
@@ -77,11 +77,11 @@ and gets the value of file descriptor passed to the system call as an argument.
 It retrieves the pointer of \texttt{task\_struct} \cite{schedhin43:online} of the process that issued the system call,
 and dereferences it to read the file descriptor array in a way that meets the demand of eBPF verifier.
 Using this array,
-it reads the pointer to the file structure (\texttt{struct file} \cite{fshinclu57:online})
+it reads the pointer to the open file object (named \texttt{struct file} \cite{fshinclu57:online} internally)
 corresponding to the specified file descriptor.
 
 Then the program populates the eBPF map with the entry of data structure that
-contains process id, an integer that indicates which system call was issued,
+contains pid (process id), ppid (parent pid),  an integer that indicates which system call was issued,
 and the pointer value to the file structure.
 
 \subsubsection{Details of eBPF Map: Ring Buffer}
@@ -92,6 +92,39 @@ and write from kernel space happen at the same rate.
 As described in the previous subsection, the eBPF program populates the ring buffer
 every time the file-related system call is issued.
 
+\subsubsection{Details of User Space Program}
+\textbf{It needs to be noticed that some implementation details remain to be finalized, which could
+  lead to further refinements in the future.
+}
 
+The user space program stores which process accesses a specific open file object (or \texttt{struct file})
+as a key-value pair in a hash table, and infers that there is a correlation between the processes
+A and B if both of them access the same object.
+% finds he correlation between shadow processes by inspecting
+% data of open file objects in kernel memory that are associated with opened files.
+The \texttt{task\_structs} of different processes have open file objects separately
+even if they are opening the same file.
+However, when the file objects are shared between the processes explicitly via unix domain socket, or
+when they are in parent-child relationship, the open file objects are shared.
+Since the program knows whether given two processes are in parent-child relationship or not
+by checking pid and ppid,
+it can infer that the processes are shadow processes
+if they access the same open file object and they are independent processes.
 
-
+\begin{algorithm}
+  \caption{foooooooo}
+  \label{algo:1}
+  \begin{algorithmic}[1]
+    \Procedure{Insertion-Sort}{$A$}
+    \For{$j = 2 \, \ldots \, A.\mathrm{length}$}
+    \State{$k = A[j]$}
+    \State{$i = j - 1$}
+    \While{$i > 0$ and $A[i] > k$}
+    \State{$A[i + 1] = A[i]$}
+    \State{$i = i - 1$}
+    \EndWhile
+    \State{$A[i + 1] = k$}
+    \EndFor
+    \EndProcedure
+  \end{algorithmic}
+\end{algorithm}
