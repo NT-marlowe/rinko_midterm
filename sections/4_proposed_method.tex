@@ -57,3 +57,14 @@ This situation makes the file descriptor transfer a unique characteristic of sha
 \end{figure*}
 
 \subsection{Design Overview}
+The overview of proposed method is shown in \Fref{img:proposal-overview}.
+\begin{figure}[t]
+  \begin{center}
+    \includegraphics[width=\columnwidth]{./img/proposal_overview.png}
+  \end{center}
+  \caption{Illustration of the concept of file descriptor transfer between shadow processes.
+    The main process requests the shadow process to execute system calls, along with the required arguments.
+    The thick arrows indicate the transfer of file descriptors over the control messages exchanged through IPC.}
+  \label{img:proposal-overview}
+\end{figure}
+
