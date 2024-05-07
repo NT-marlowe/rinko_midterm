@@ -108,23 +108,29 @@ However, when the file objects are shared between the processes explicitly via u
 when they are in parent-child relationship, the open file objects are shared.
 Since the program knows whether given two processes are in parent-child relationship or not
 by checking pid and ppid,
-it can infer that the processes are shadow processes
+it can infer that the processes are transferring file descriptors through unix domain socket,
+and thus they are shadow processes
 if they access the same open file object and they are independent processes.
 
-\begin{algorithm}
-  \caption{foooooooo}
-  \label{algo:1}
-  \begin{algorithmic}[1]
-    \Procedure{Insertion-Sort}{$A$}
-    \For{$j = 2 \, \ldots \, A.\mathrm{length}$}
-    \State{$k = A[j]$}
-    \State{$i = j - 1$}
-    \While{$i > 0$ and $A[i] > k$}
-    \State{$A[i + 1] = A[i]$}
-    \State{$i = i - 1$}
-    \EndWhile
-    \State{$A[i + 1] = k$}
-    \EndFor
-    \EndProcedure
-  \end{algorithmic}
-\end{algorithm}
+% \begin{algorithm}
+%   \caption{foooooooo}
+%   \label{algo:1}
+%   \begin{algorithmic}[1]
+%     \Procedure{Insertion-Sort}{$A$}
+%     \State{$h = hash\_table$}
+%     \While{Read $entry$ from ring buffer}
+%     \State{${file\_obj} = entry.obj$}
+%     \If{$file\_obj$ is not in $h$}
+%     \State{Insert $file\_obj$ to $h$}
+%     \State{Continue}
+%     \EndIf
+
+%     \If{$entry.pid$ is not in $h[file\_obj]$}
+
+
+%     \State{$i = j - 1$}
+%     \State{$A[i + 1] = k$}
+%     \EndWhile
+%     \EndProcedure
+%   \end{algorithmic}
+% \end{algorithm}
